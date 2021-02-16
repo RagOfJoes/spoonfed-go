@@ -19,7 +19,7 @@ func (r *queryResolver) GetRecipes(ctx context.Context, limit int, cursor *strin
 	if err != nil {
 		return nil, err
 	}
-	recipes, err := client.GetRecipes(limit, cursor, sort)
+	recipes, err := client.GetRecipes(ctx, limit, cursor, sort)
 	return recipes, err
 }
 
@@ -28,7 +28,7 @@ func (r *recipeResolver) NumOfLikes(ctx context.Context, obj *model.Recipe) (*in
 	if err != nil {
 		return nil, err
 	}
-	count := client.RecipeLikes(obj.ID)
+	count := client.RecipeLikes(ctx, obj.ID)
 	return &count, nil
 }
 
@@ -40,7 +40,7 @@ func (r *recipeResolver) CreatedBy(ctx context.Context, obj *model.Recipe) (*mod
 		if err != nil {
 			return nil, err
 		}
-		return client.FindUserByID(obj.CreatedBy)
+		return client.FindUserByID(ctx, obj.CreatedBy)
 	}
 	return user, err
 }
@@ -54,7 +54,7 @@ func (r *recipeResolver) IsLiked(ctx context.Context, obj *model.Recipe) (*bool,
 	if err != nil || user == nil {
 		return nil, nil
 	}
-	liked := client.IsRecipeLiked(user.Sub, obj.ID)
+	liked := client.IsRecipeLiked(ctx, user.Sub, obj.ID)
 	return &liked, nil
 }
 

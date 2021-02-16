@@ -3,8 +3,8 @@ package database
 import (
 	"context"
 	"errors"
-	"time"
 
+	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,12 +14,12 @@ import (
 // so that they just have a simple method that functions
 // the same way.
 
-const (
-	recipeCollectionName = "recipes"
+var (
+	recipeCollectionName = config.DatabaseCollectionNames["Recipe"]
 )
 
 // GetRecipes helper fn
-func (db *DB) GetRecipes(limit int, cursor *string, sort *model.CursorSortInput) (*model.RecipeConnection, error) {
+func (db *DB) GetRecipes(ctx context.Context, limit int, cursor *string, sort *model.CursorSortInput) (*model.RecipeConnection, error) {
 	if limit <= 1 || limit > 100 {
 		return nil, errors.New("limit must be between the range of 1 - 100")
 	}
@@ -27,8 +27,6 @@ func (db *DB) GetRecipes(limit int, cursor *string, sort *model.CursorSortInput)
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
 	key := sort.Key()
 	decodedSort := sort.Bson()
 	order := sort.Value().Int()

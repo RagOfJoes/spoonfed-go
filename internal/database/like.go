@@ -2,19 +2,19 @@ package database
 
 import (
 	"context"
-	"time"
 
+	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const (
-	likeCollectionName = "likes"
+var (
+	likeCollectionName = config.DatabaseCollectionNames["Like"]
 )
 
 // RecipeLikes returns the number of likes that
 // a recipe has
-func (db *DB) RecipeLikes(id string) int {
+func (db *DB) RecipeLikes(ctx context.Context, id string) int {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return 0
@@ -23,9 +23,6 @@ func (db *DB) RecipeLikes(id string) int {
 	if err != nil {
 		return 0
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	counts, err := collection.CountDocuments(ctx, bson.D{
 		{Key: "active", Value: true},
 		{Key: "recipeId", Value: objID},
@@ -38,7 +35,7 @@ func (db *DB) RecipeLikes(id string) int {
 }
 
 // IsRecipeLiked returns whether a recipe is liked by a user
-func (db *DB) IsRecipeLiked(userID string, recipeID string) bool {
+func (db *DB) IsRecipeLiked(ctx context.Context, userID string, recipeID string) bool {
 	user, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		return false
@@ -47,14 +44,10 @@ func (db *DB) IsRecipeLiked(userID string, recipeID string) bool {
 	if err != nil {
 		return false
 	}
-
 	collection, err := db.Collection(likeCollectionName)
 	if err != nil {
 		return false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	liked, err := collection.CountDocuments(ctx, bson.D{
 		{Key: "active", Value: true},
 		{Key: "userId", Value: user},

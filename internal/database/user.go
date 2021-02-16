@@ -3,27 +3,23 @@ package database
 import (
 	"context"
 	"log"
-	"time"
 
+	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const (
-	userCollectionName = "users"
+var (
+	userCollectionName = config.DatabaseCollectionNames["User"]
 )
 
 // FindUserByID does exactly as the name suggests.
-func (db *DB) FindUserByID(id primitive.ObjectID) (*model.User, error) {
+func (db *DB) FindUserByID(ctx context.Context, id primitive.ObjectID) (*model.User, error) {
 	collection, err := db.Collection(userCollectionName)
 	if err != nil {
 		return nil, err
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	var user *model.User
 	fErr := collection.FindOne(ctx, bson.D{{Key: "sub", Value: id}}).Decode(&user)
 	if fErr != nil {
@@ -36,15 +32,11 @@ func (db *DB) FindUserByID(id primitive.ObjectID) (*model.User, error) {
 // FindUsersByID does exactly as the name suggests.
 // This is mainly used for the Dataloader's batch
 // function
-func (db *DB) FindUsersByID(ids []string) ([]*model.User, []error) {
+func (db *DB) FindUsersByID(ctx context.Context, ids []string) ([]*model.User, []error) {
 	collection, err := db.Collection(userCollectionName)
 	if err != nil {
 		return nil, []error{err}
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	var users []*model.User
 	var errors []error
 	var converted []primitive.ObjectID
