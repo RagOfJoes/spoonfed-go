@@ -1,0 +1,78 @@
+# Custom Scalars
+
+scalar Date
+scalar Email
+# scalar ObjectId
+
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+directive @goField(
+  forceResolver: Boolean
+  name: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+
+# Enums
+enum SORT_ORDER {
+  ASC
+  DESC
+}
+
+# File Types
+type Image {
+  url: String!
+  name: String!
+}
+
+type MetaDate {
+  creation: Date!
+  lastUpdate: Date
+}
+
+input CursorSortInput {
+  name: SORT_ORDER
+  dateCreation: SORT_ORDER
+}
+
+type PageInfo {
+  cursor: ID!
+  hasNextPage: Boolean!
+}
+
+input IdFilterInput {
+  is: ID
+  notIs: ID
+
+  has: [ID]
+  notHas: [ID]
+}
+
+input IntFilterInput {
+  equals: Int
+  lessThan: Int
+  greaterThan: Int
+}
+
+input StringFilterInput {
+  contains: String
+}
+
+# input DateFilterInput {
+#   after: Date
+#   before: Date
+#   equals: Date
+#   between: [Date]
+# }
+
+# These are to be extended for further useage
+type Query {
+  rootQuery: String
+}
+type Mutation {
+  rootMutation: String
+}
+type Subscription {
+  rootSubscription: String
+}

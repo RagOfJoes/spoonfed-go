@@ -1,0 +1,17 @@
+type User {
+  # From AS Server
+  sub: ID!
+  email: Email!
+  join_date: Date
+
+  bio: String
+  avatar: String
+  username: String
+  name: UserName
+}
+
+type UserName {
+  first: String
+  last: String
+  full: String
+}

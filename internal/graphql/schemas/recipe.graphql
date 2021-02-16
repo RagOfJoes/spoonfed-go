@@ -1,0 +1,40 @@
+type Recipe {
+  id: ID!
+  name: String!
+  images: [Image!]!
+  servings: String!
+  time: RecipeTimeType
+  ingredients: [String!]!
+  instructions: [String!]!
+
+  # Metadata
+  slug: String!
+  numOfLikes: Int
+  date: MetaDate!
+  createdBy: User!
+  isLiked: Boolean
+  importUrl: String
+}
+
+type RecipeTimeType {
+  prep: String
+  cook: String
+  ready: String
+  active: String
+  inactive: String
+  total: String!
+}
+
+type RecipeEdge {
+  cursor: ID!
+  node: Recipe
+}
+
+type RecipeConnection {
+  edges: [RecipeEdge!]
+  pageInfo: PageInfo!
+}
+
+extend type Query {
+  getRecipes(limit: Int!, cursor: ID, sort: CursorSortInput): RecipeConnection!
+}
