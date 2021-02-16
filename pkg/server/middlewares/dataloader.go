@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log"
 	"time"
 
 	"github.com/RagOfJoes/spoonfed-go/internal/database"
@@ -12,18 +13,17 @@ import (
 
 // Dataloader sets Dataloaders into Context
 func Dataloader() gin.HandlerFunc {
+	client, err := database.Client()
+	if err != nil {
+		log.Panic(err)
+	}
 	return func(c *gin.Context) {
 		// UserLoader
 		userLoader := dataloader.NewUserLoader(dataloader.UserLoaderConfig{
 			MaxBatch: 100,
 			Wait:     1 * time.Millisecond,
 			Fetch: func(ids []string) ([]*model.User, []error) {
-				client, err := database.Client()
-				if err != nil {
-					c.Next()
-					return nil, []error{database.ErrClientNotInitialized}
-				}
-				return client.FindUsersByID(ids)
+				return client.FindUsersByID(c.Request.Context(), ids)
 			},
 		})
 		util.AddToContext(c, util.ProjectContextKeys.Dataloader, &dataloader.Loaders{
