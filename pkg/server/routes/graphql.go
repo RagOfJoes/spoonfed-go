@@ -16,6 +16,9 @@ func GraphQL(cfg *util.ServerConfig, r *gin.Engine) error {
 	playgroundPath := cfg.GraphQL.PlaygroundPath
 
 	// GraphQL handler
+	// Middlewares execution order:
+	// 1. Auth
+	// 2. Dataloaders
 	r.POST(graphqlPath, middlewares.Auth(graphqlPath), middlewares.Dataloader(), handlers.GraphQLHandler(&cfg.GraphQL))
 	log.Printf("[GraphQL] mounted at %s", graphqlPath)
 	// Playground handler
