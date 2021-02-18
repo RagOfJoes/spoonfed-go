@@ -27,6 +27,8 @@ var (
 	// middleware failed or was not able to retrieve user info
 	// from the Auth Server
 	ErrUserNotInContext = errors.New("user not found in context")
+	// ErrUnauthenticated defines an error where a
+	ErrUnauthenticated = errors.New("must be authenticated to access this resource")
 )
 
 var client *OpenIDClient
