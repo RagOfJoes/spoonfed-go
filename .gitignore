@@ -16,3 +16,10 @@
 
 # Dotenv
 .env
+
+# Build folders
+tmp
+build
+
+# Mac stuff
+.DS_Store

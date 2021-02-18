@@ -21,7 +21,7 @@ var (
 // LoadConfig does just that
 func LoadConfig() *util.ServerConfig {
 	err := godotenv.Load()
-	if err != nil {
+	if err != nil && util.GetAssert("APP_ENV") != "PRODUCTION" {
 		log.Panic("[ENV] Failed to load")
 		return nil
 	}
