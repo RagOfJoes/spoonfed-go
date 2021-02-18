@@ -4,13 +4,7 @@ import (
 	"github.com/RagOfJoes/spoonfed-go/internal/auth"
 	"github.com/RagOfJoes/spoonfed-go/internal/database"
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
-	"github.com/joho/godotenv"
 )
-
-// InitializeEnv loads variables from .env file into current process
-func InitializeEnv() error {
-	return godotenv.Load()
-}
 
 // InitializeDatabase initializes the db singleton object
 func InitializeDatabase(cfg *util.ServerConfig) (*database.DB, error) {
