@@ -15,3 +15,7 @@ type UserName {
   last: String
   full: String
 }
+
+extend type Query {
+  me: User
+}

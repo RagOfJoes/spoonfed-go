@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"log"
 
 	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/model"
@@ -23,7 +22,7 @@ func (db *DB) FindUserByID(ctx context.Context, id primitive.ObjectID) (*model.U
 	var user *model.User
 	fErr := collection.FindOne(ctx, bson.D{{Key: "sub", Value: id}}).Decode(&user)
 	if fErr != nil {
-		log.Print(err)
+		return nil, fErr
 	}
 
 	return user, nil
