@@ -68,8 +68,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetRecipes func(childComplexity int, limit int, cursor *string, sort *model.CursorSortInput) int
-		RootQuery  func(childComplexity int) int
+		GetRecipeDetail func(childComplexity int, slug string) int
+		GetRecipes      func(childComplexity int, limit int, cursor *string, sort model.CursorSortInput, filters []*model.RecipeFilterInput) int
+		Me              func(childComplexity int) int
+		RootQuery       func(childComplexity int) int
 	}
 
 	Recipe struct {
@@ -133,7 +135,9 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	RootQuery(ctx context.Context) (*string, error)
-	GetRecipes(ctx context.Context, limit int, cursor *string, sort *model.CursorSortInput) (*model.RecipeConnection, error)
+	GetRecipeDetail(ctx context.Context, slug string) (*model.Recipe, error)
+	GetRecipes(ctx context.Context, limit int, cursor *string, sort model.CursorSortInput, filters []*model.RecipeFilterInput) (*model.RecipeConnection, error)
+	Me(ctx context.Context) (*model.User, error)
 }
 type RecipeResolver interface {
 	NumOfLikes(ctx context.Context, obj *model.Recipe) (*int, error)
@@ -212,6 +216,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.PageInfo.HasNextPage(childComplexity), true
 
+	case "Query.getRecipeDetail":
+		if e.complexity.Query.GetRecipeDetail == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getRecipeDetail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetRecipeDetail(childComplexity, args["slug"].(string)), true
+
 	case "Query.getRecipes":
 		if e.complexity.Query.GetRecipes == nil {
 			break
@@ -222,7 +238,14 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetRecipes(childComplexity, args["limit"].(int), args["cursor"].(*string), args["sort"].(*model.CursorSortInput)), true
+		return e.complexity.Query.GetRecipes(childComplexity, args["limit"].(int), args["cursor"].(*string), args["sort"].(model.CursorSortInput), args["filters"].([]*model.RecipeFilterInput)), true
+
+	case "Query.me":
+		if e.complexity.Query.Me == nil {
+			break
+		}
+
+		return e.complexity.Query.Me(childComplexity), true
 
 	case "Query.rootQuery":
 		if e.complexity.Query.RootQuery == nil {
@@ -577,18 +600,28 @@ type RecipeTimeType {
   total: String!
 }
 
+# Cursor Pagination types
 type RecipeEdge {
   cursor: ID!
   node: Recipe
 }
-
 type RecipeConnection {
   edges: [RecipeEdge!]
   pageInfo: PageInfo!
 }
 
 extend type Query {
-  getRecipes(limit: Int!, cursor: ID, sort: CursorSortInput): RecipeConnection!
+  getRecipeDetail(slug: String!): Recipe
+  getRecipes(
+    limit: Int!
+    cursor: ID
+    sort: CursorSortInput!
+    filters: [RecipeFilterInput!]
+  ): RecipeConnection!
+}
+
+input RecipeFilterInput {
+  userSub: IDFilterInput
 }
 `, BuiltIn: false},
 	{Name: "internal/graphql/schemas/root.graphql", Input: `# Custom Scalars
@@ -634,30 +667,23 @@ type PageInfo {
   hasNextPage: Boolean!
 }
 
-input IdFilterInput {
+input IDFilterInput {
   is: ID
   notIs: ID
 
-  has: [ID]
-  notHas: [ID]
+  has: [ID!]
+  notHas: [ID!]
 }
 
 input IntFilterInput {
-  equals: Int
-  lessThan: Int
-  greaterThan: Int
+  equals: Int!
+  lessThan: Int!
+  greaterThan: Int!
 }
 
 input StringFilterInput {
-  contains: String
+  contains: String!
 }
-
-# input DateFilterInput {
-#   after: Date
-#   before: Date
-#   equals: Date
-#   between: [Date]
-# }
 
 # These are to be extended for further useage
 type Query {
@@ -687,7 +713,10 @@ type UserName {
   last: String
   full: String
 }
-`, BuiltIn: false},
+
+extend type Query {
+  me: User
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -707,6 +736,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getRecipeDetail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["slug"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("slug"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["slug"] = arg0
 	return args, nil
 }
 
@@ -731,15 +775,24 @@ func (ec *executionContext) field_Query_getRecipes_args(ctx context.Context, raw
 		}
 	}
 	args["cursor"] = arg1
-	var arg2 *model.CursorSortInput
+	var arg2 model.CursorSortInput
 	if tmp, ok := rawArgs["sort"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sort"))
-		arg2, err = ec.unmarshalOCursorSortInput2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐCursorSortInput(ctx, tmp)
+		arg2, err = ec.unmarshalNCursorSortInput2githubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐCursorSortInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["sort"] = arg2
+	var arg3 []*model.RecipeFilterInput
+	if tmp, ok := rawArgs["filters"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filters"))
+		arg3, err = ec.unmarshalORecipeFilterInput2ᚕᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐRecipeFilterInputᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filters"] = arg3
 	return args, nil
 }
 
@@ -1052,6 +1105,45 @@ func (ec *executionContext) _Query_rootQuery(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Query_getRecipeDetail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getRecipeDetail_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetRecipeDetail(rctx, args["slug"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Recipe)
+	fc.Result = res
+	return ec.marshalORecipe2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐRecipe(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_getRecipes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1077,7 +1169,7 @@ func (ec *executionContext) _Query_getRecipes(ctx context.Context, field graphql
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetRecipes(rctx, args["limit"].(int), args["cursor"].(*string), args["sort"].(*model.CursorSortInput))
+		return ec.resolvers.Query().GetRecipes(rctx, args["limit"].(int), args["cursor"].(*string), args["sort"].(model.CursorSortInput), args["filters"].([]*model.RecipeFilterInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1092,6 +1184,38 @@ func (ec *executionContext) _Query_getRecipes(ctx context.Context, field graphql
 	res := resTmp.(*model.RecipeConnection)
 	fc.Result = res
 	return ec.marshalNRecipeConnection2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐRecipeConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_me(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Me(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3420,7 +3544,7 @@ func (ec *executionContext) unmarshalInputCursorSortInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputIdFilterInput(ctx context.Context, obj interface{}) (model.IDFilterInput, error) {
+func (ec *executionContext) unmarshalInputIDFilterInput(ctx context.Context, obj interface{}) (model.IDFilterInput, error) {
 	var it model.IDFilterInput
 	var asMap = obj.(map[string]interface{})
 
@@ -3430,7 +3554,7 @@ func (ec *executionContext) unmarshalInputIdFilterInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("is"))
-			it.Is, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.Is, err = ec.unmarshalOID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3438,7 +3562,7 @@ func (ec *executionContext) unmarshalInputIdFilterInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notIs"))
-			it.NotIs, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			it.NotIs, err = ec.unmarshalOID2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3446,7 +3570,7 @@ func (ec *executionContext) unmarshalInputIdFilterInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("has"))
-			it.Has, err = ec.unmarshalOID2ᚕᚖstring(ctx, v)
+			it.Has, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3454,7 +3578,7 @@ func (ec *executionContext) unmarshalInputIdFilterInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("notHas"))
-			it.NotHas, err = ec.unmarshalOID2ᚕᚖstring(ctx, v)
+			it.NotHas, err = ec.unmarshalOID2ᚕstringᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3474,7 +3598,7 @@ func (ec *executionContext) unmarshalInputIntFilterInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("equals"))
-			it.Equals, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			it.Equals, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3482,7 +3606,7 @@ func (ec *executionContext) unmarshalInputIntFilterInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lessThan"))
-			it.LessThan, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			it.LessThan, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3490,7 +3614,27 @@ func (ec *executionContext) unmarshalInputIntFilterInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("greaterThan"))
-			it.GreaterThan, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			it.GreaterThan, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRecipeFilterInput(ctx context.Context, obj interface{}) (model.RecipeFilterInput, error) {
+	var it model.RecipeFilterInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "userSub":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userSub"))
+			it.UserSub, err = ec.unmarshalOIDFilterInput2githubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐIDFilterInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3510,7 +3654,7 @@ func (ec *executionContext) unmarshalInputStringFilterInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("contains"))
-			it.Contains, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			it.Contains, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3675,6 +3819,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				res = ec._Query_rootQuery(ctx, field)
 				return res
 			})
+		case "getRecipeDetail":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getRecipeDetail(ctx, field)
+				return res
+			})
 		case "getRecipes":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -3687,6 +3842,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
+				return res
+			})
+		case "me":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_me(ctx, field)
 				return res
 			})
 		case "__type":
@@ -4260,6 +4426,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNCursorSortInput2githubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐCursorSortInput(ctx context.Context, v interface{}) (model.CursorSortInput, error) {
+	res, err := ec.unmarshalInputCursorSortInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNDate2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
 	res, err := model.UnmarshalDate(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4409,6 +4580,11 @@ func (ec *executionContext) marshalNRecipeEdge2ᚖgithubᚗcomᚋRagOfJoesᚋspo
 		return graphql.Null
 	}
 	return ec._RecipeEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNRecipeFilterInput2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐRecipeFilterInput(ctx context.Context, v interface{}) (*model.RecipeFilterInput, error) {
+	res, err := ec.unmarshalInputRecipeFilterInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -4723,14 +4899,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) unmarshalOCursorSortInput2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐCursorSortInput(ctx context.Context, v interface{}) (*model.CursorSortInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputCursorSortInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalODate2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
 	res, err := model.UnmarshalDate(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4755,7 +4923,16 @@ func (ec *executionContext) marshalODate2ᚖtimeᚐTime(ctx context.Context, sel
 	return model.MarshalDate(*v)
 }
 
-func (ec *executionContext) unmarshalOID2ᚕᚖstring(ctx context.Context, v interface{}) ([]*string, error) {
+func (ec *executionContext) unmarshalOID2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalID(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	return graphql.MarshalID(v)
+}
+
+func (ec *executionContext) unmarshalOID2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -4768,10 +4945,10 @@ func (ec *executionContext) unmarshalOID2ᚕᚖstring(ctx context.Context, v int
 		}
 	}
 	var err error
-	res := make([]*string, len(vSlice))
+	res := make([]string, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalOID2ᚖstring(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNID2string(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -4779,13 +4956,13 @@ func (ec *executionContext) unmarshalOID2ᚕᚖstring(ctx context.Context, v int
 	return res, nil
 }
 
-func (ec *executionContext) marshalOID2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+func (ec *executionContext) marshalOID2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	ret := make(graphql.Array, len(v))
 	for i := range v {
-		ret[i] = ec.marshalOID2ᚖstring(ctx, sel, v[i])
+		ret[i] = ec.marshalNID2string(ctx, sel, v[i])
 	}
 
 	return ret
@@ -4804,6 +4981,11 @@ func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.Se
 		return graphql.Null
 	}
 	return graphql.MarshalID(*v)
+}
+
+func (ec *executionContext) unmarshalOIDFilterInput2githubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐIDFilterInput(ctx context.Context, v interface{}) (model.IDFilterInput, error) {
+	res, err := ec.unmarshalInputIDFilterInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
@@ -4866,6 +5048,30 @@ func (ec *executionContext) marshalORecipeEdge2ᚕᚖgithubᚗcomᚋRagOfJoesᚋ
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) unmarshalORecipeFilterInput2ᚕᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐRecipeFilterInputᚄ(ctx context.Context, v interface{}) ([]*model.RecipeFilterInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*model.RecipeFilterInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNRecipeFilterInput2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐRecipeFilterInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) marshalORecipeTimeType2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐRecipeTimeType(ctx context.Context, sel ast.SelectionSet, v *model.RecipeTimeType) graphql.Marshaler {
@@ -4949,6 +5155,13 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUserName2ᚖgithubᚗcomᚋRagOfJoesᚋspoonfedᚑgoᚋinternalᚋgraphqlᚋmodelᚐUserName(ctx context.Context, sel ast.SelectionSet, v *model.UserName) graphql.Marshaler {

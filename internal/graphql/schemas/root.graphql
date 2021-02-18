@@ -41,30 +41,23 @@ type PageInfo {
   hasNextPage: Boolean!
 }
 
-input IdFilterInput {
+input IDFilterInput {
   is: ID
   notIs: ID
 
-  has: [ID]
-  notHas: [ID]
+  has: [ID!]
+  notHas: [ID!]
 }
 
 input IntFilterInput {
-  equals: Int
-  lessThan: Int
-  greaterThan: Int
+  equals: Int!
+  lessThan: Int!
+  greaterThan: Int!
 }
 
 input StringFilterInput {
-  contains: String
+  contains: String!
 }
-
-# input DateFilterInput {
-#   after: Date
-#   before: Date
-#   equals: Date
-#   between: [Date]
-# }
 
 # These are to be extended for further useage
 type Query {

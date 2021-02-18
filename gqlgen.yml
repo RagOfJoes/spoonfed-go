@@ -64,3 +64,9 @@ models:
     model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.SortOrder
   CursorSortInput:
     model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.CursorSortInput
+  IDFilterInput:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.IDFilterInput
+  StringFilterInput:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.StringFilterInput
+  RecipeFilterInput:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.RecipeFilterInput

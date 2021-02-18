@@ -7,12 +7,9 @@ import (
 	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/model"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-// TODO: Move the decode helper fn to FieldResolvers
-// so that they just have a simple method that functions
-// the same way.
 
 var (
 	recipeCollectionName = config.DatabaseCollectionNames["Recipe"]
@@ -36,7 +33,7 @@ func (db *DB) GetRecipeDetail(ctx context.Context, slug string) (*model.Recipe, 
 }
 
 // GetRecipes helper fn
-func (db *DB) GetRecipes(ctx context.Context, limit int, cursor *string, sort *model.CursorSortInput) (*model.RecipeConnection, error) {
+func (db *DB) GetRecipes(ctx context.Context, limit int, cursor *string, sort *model.CursorSortInput, filters []*model.RecipeFilterInput) (*model.RecipeConnection, error) {
 	if limit <= 1 || limit > 100 {
 		return nil, errors.New("limit must be between the range of 1 - 100")
 	}
@@ -50,11 +47,23 @@ func (db *DB) GetRecipes(ctx context.Context, limit int, cursor *string, sort *m
 	opts := options.Find()
 	opts.SetLimit(int64(limit + 1))
 	opts.SetSort(decodedSort)
-	filter := model.CursorToBson(cursor, key, order)
-	cur, err := collection.Aggregate(ctx, []bson.M{
-		{"$match": filter},
-		{"$sort": decodedSort},
-		{"$limit": int64(limit + 1)},
+	cursorFilter := model.CursorToBson(cursor, key, order)
+	matchElements := bson.D{}
+	if cursorFilter.Key != "" {
+		matchElements = append(matchElements, cursorFilter)
+	}
+	for _, filter := range filters {
+		if filter != nil {
+			obj, err := filter.Bson()
+			if err == nil {
+				matchElements = append(matchElements, *obj)
+			}
+		}
+	}
+	cur, err := collection.Aggregate(ctx, mongo.Pipeline{
+		bson.D{{Key: "$match", Value: matchElements}},
+		bson.D{{Key: "$sort", Value: decodedSort}},
+		bson.D{{Key: "$limit", Value: int64(limit + 1)}},
 	})
 	if err != nil {
 		return nil, err

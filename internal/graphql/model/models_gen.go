@@ -2,22 +2,15 @@
 
 package model
 
-type IDFilterInput struct {
-	Is     *string   `json:"is"`
-	NotIs  *string   `json:"notIs"`
-	Has    []*string `json:"has"`
-	NotHas []*string `json:"notHas"`
-}
-
 type Image struct {
 	URL  string `json:"url"`
 	Name string `json:"name"`
 }
 
 type IntFilterInput struct {
-	Equals      *int `json:"equals"`
-	LessThan    *int `json:"lessThan"`
-	GreaterThan *int `json:"greaterThan"`
+	Equals      int `json:"equals"`
+	LessThan    int `json:"lessThan"`
+	GreaterThan int `json:"greaterThan"`
 }
 
 type PageInfo struct {
@@ -42,8 +35,4 @@ type RecipeTimeType struct {
 	Active   *string `json:"active"`
 	Inactive *string `json:"inactive"`
 	Total    string  `json:"total"`
-}
-
-type StringFilterInput struct {
-	Contains *string `json:"contains"`
 }
