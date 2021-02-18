@@ -14,12 +14,14 @@ import (
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 )
 
-func (r *queryResolver) GetRecipes(ctx context.Context, limit int, cursor *string, sort *model.CursorSortInput) (*model.RecipeConnection, error) {
+func (r *queryResolver) GetRecipeDetail(ctx context.Context, slug string) (*model.Recipe, error) {
 	client, err := database.Client()
 	if err != nil {
 		return nil, err
 	}
-	recipes, err := client.GetRecipes(ctx, limit, cursor, sort)
+	return client.GetRecipeDetail(ctx, slug)
+}
+
 	return recipes, err
 }
 

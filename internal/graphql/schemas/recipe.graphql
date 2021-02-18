@@ -25,16 +25,26 @@ type RecipeTimeType {
   total: String!
 }
 
+# Cursor Pagination types
 type RecipeEdge {
   cursor: ID!
   node: Recipe
 }
-
 type RecipeConnection {
   edges: [RecipeEdge!]
   pageInfo: PageInfo!
 }
 
 extend type Query {
-  getRecipes(limit: Int!, cursor: ID, sort: CursorSortInput): RecipeConnection!
+  getRecipeDetail(slug: String!): Recipe
+  getRecipes(
+    limit: Int!
+    cursor: ID
+    sort: CursorSortInput!
+    filters: [RecipeFilterInput!]
+  ): RecipeConnection!
+}
+
+input RecipeFilterInput {
+  userSub: IDFilterInput
 }

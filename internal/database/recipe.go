@@ -18,6 +18,23 @@ var (
 	recipeCollectionName = config.DatabaseCollectionNames["Recipe"]
 )
 
+// GetRecipeDetail helper fn
+func (db *DB) GetRecipeDetail(ctx context.Context, slug string) (*model.Recipe, error) {
+	if slug == "" {
+		return nil, errors.New("must provide valid slug")
+	}
+	collection, err := db.Collection(recipeCollectionName)
+	if err != nil {
+		return nil, err
+	}
+	var recipe *model.Recipe
+	fErr := collection.FindOne(ctx, bson.D{{Key: "slug", Value: slug}}).Decode(&recipe)
+	if fErr != nil {
+		return nil, err
+	}
+	return recipe, nil
+}
+
 // GetRecipes helper fn
 func (db *DB) GetRecipes(ctx context.Context, limit int, cursor *string, sort *model.CursorSortInput) (*model.RecipeConnection, error) {
 	if limit <= 1 || limit > 100 {
