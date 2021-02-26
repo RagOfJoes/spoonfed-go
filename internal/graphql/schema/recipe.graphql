@@ -40,11 +40,18 @@ extend type Query {
   getRecipes(
     limit: Int!
     cursor: ID
-    sort: CursorSortInput!
+    sort: RecipeSortInput!
     filters: [RecipeFilterInput!]
   ): RecipeConnection!
 }
 
+input RecipeSortInput {
+  name: SortOrder
+  dateCreation: SortOrder
+}
+
 input RecipeFilterInput {
+  name: StringFilterInput
   userSub: IDFilterInput
+  userName: StringFilterInput
 }

@@ -15,7 +15,7 @@ directive @goField(
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 # Enums
-enum SORT_ORDER {
+enum SortOrder {
   ASC
   DESC
 }
@@ -29,11 +29,6 @@ type Image {
 type MetaDate {
   creation: Date!
   lastUpdate: Date
-}
-
-input CursorSortInput {
-  name: SORT_ORDER
-  dateCreation: SORT_ORDER
 }
 
 type PageInfo {
@@ -56,7 +51,8 @@ input IntFilterInput {
 }
 
 input StringFilterInput {
-  contains: String!
+  matches: String
+  contains: String
 }
 
 # These are to be extended for further useage
