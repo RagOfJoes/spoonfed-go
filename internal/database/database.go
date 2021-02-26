@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -15,9 +16,14 @@ import (
 )
 
 var (
+	// Internal Properties
+	connectOnce          sync.Once
+	likeCollectionName   = config.DatabaseCollectionNames["Like"]
+	userCollectionName   = config.DatabaseCollectionNames["User"]
+	recipeCollectionName = config.DatabaseCollectionNames["Recipe"]
+
 	// Singleton object
-	db          *DB
-	connectOnce sync.Once
+	db *DB
 
 	// ErrClientNotInitialized defines an error where the mongo client has not yet
 	// been initialized

@@ -3,14 +3,9 @@ package database
 import (
 	"context"
 
-	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-)
-
-var (
-	userCollectionName = config.DatabaseCollectionNames["User"]
 )
 
 // FindUserByID does exactly as the name suggests.

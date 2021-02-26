@@ -4,15 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/model"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-var (
-	recipeCollectionName = config.DatabaseCollectionNames["Recipe"]
 )
 
 // GetRecipeDetail helper fn

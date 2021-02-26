@@ -3,13 +3,8 @@ package database
 import (
 	"context"
 
-	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-)
-
-var (
-	likeCollectionName = config.DatabaseCollectionNames["Like"]
 )
 
 // RecipeLikes returns the number of likes that
