@@ -49,7 +49,7 @@ func DecodeCursor(s string) (interface{}, error) {
 
 // CursorToBson decodes a cursor and returns a valid mongo
 // interface for filtering/sorting
-func CursorToBson(cursor *string, key string, order int) bson.E {
+func CursorToBson(cursor *string, sortKey string, sortOrder int) bson.E {
 	if cursor == nil {
 		return bson.E{}
 	}
@@ -63,12 +63,12 @@ func CursorToBson(cursor *string, key string, order int) bson.E {
 	switch decoded.(type) {
 	case *time.Time:
 		op := "$lt"
-		if order != -1 {
+		if sortOrder != -1 {
 			op = "$gt"
 		}
 		decodedTime := decoded.(*time.Time)
 		filter = bson.E{
-			Key: key, Value: bson.D{
+			Key: sortKey, Value: bson.D{
 				{
 					Key: op, Value: decodedTime.UTC(),
 				},
@@ -77,12 +77,12 @@ func CursorToBson(cursor *string, key string, order int) bson.E {
 		break
 	case *string:
 		op := "$lte"
-		if order != -1 {
+		if sortOrder != -1 {
 			op = "$gte"
 		}
 		decodedString := decoded.(*string)
 		filter = bson.E{
-			Key: key, Value: bson.D{
+			Key: sortKey, Value: bson.D{
 				{
 					Key: op, Value: decodedString,
 				},
