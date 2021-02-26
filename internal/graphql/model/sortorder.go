@@ -52,7 +52,7 @@ func (e *SortOrder) UnmarshalGQL(v interface{}) error {
 
 	*e = SortOrder(str)
 	if !e.IsValid() {
-		return fmt.Errorf("%s is not a valid SORT_ORDER", str)
+		return fmt.Errorf("%s is not a valid SortOrder", str)
 	}
 	return nil
 }

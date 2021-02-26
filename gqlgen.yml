@@ -60,10 +60,10 @@ models:
     model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.Email
   MetaDate:
     model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.MetaDate
-  SORT_ORDER:
+  SortOrder:
     model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.SortOrder
-  CursorSortInput:
-    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.CursorSortInput
+  RecipeSortInput:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.RecipeSortInput
   IDFilterInput:
     model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.IDFilterInput
   StringFilterInput:
