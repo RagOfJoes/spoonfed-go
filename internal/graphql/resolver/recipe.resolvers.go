@@ -22,7 +22,7 @@ func (r *queryResolver) GetRecipeDetail(ctx context.Context, slug string) (*mode
 	return client.GetRecipeDetail(ctx, slug)
 }
 
-func (r *queryResolver) GetRecipes(ctx context.Context, limit int, cursor *string, sort model.CursorSortInput, filters []*model.RecipeFilterInput) (*model.RecipeConnection, error) {
+func (r *queryResolver) GetRecipes(ctx context.Context, limit int, cursor *string, sort model.RecipeSortInput, filters []*model.RecipeFilterInput) (*model.RecipeConnection, error) {
 	client, err := database.Client()
 	if err != nil {
 		return nil, err
