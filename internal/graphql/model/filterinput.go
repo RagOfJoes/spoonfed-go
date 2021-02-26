@@ -2,135 +2,75 @@ package model
 
 import (
 	"errors"
-	"reflect"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var (
+	// ErrFilterInput defines an error where a filter input fails to conver to
+	// bson
 	ErrFilterInput = errors.New("failed to convert filter input to bson")
 )
 
-// IDFilterInput custom type
-type IDFilterInput struct {
-	Is     string   `json:"is"`
-	NotIs  string   `json:"notIs"`
-	Has    []string `json:"has"`
-	NotHas []string `json:"notHas"`
+// See: https://github.com/svett/golang-design-patterns/tree/master/creational-patterns/factory-method
+// Follows the design pattern provided above.
+
+// FilterInput defines an interface that stores a collection of
+// FilterInput types ie:
+// `
+//  type RecipeFilterInput struct {
+//		UserName *StringFilterInput
+//	}
+// `
+type FilterInput interface {
+	Bson() (bson.M, bool)
 }
 
-func (i *IDFilterInput) getCurrentKey() *string {
-	val := reflect.ValueOf(i).Elem()
-	for i := 0; i < val.NumField(); i++ {
-		name := val.Type().Field(i).Name
-		if name == "Is" || name == "NotIs" {
-			_, ok := val.FieldByName(name).Interface().(string)
-			if ok {
-				return &name
+// FilterInputFactory produces FilterInput given an arbritrary
+// given argument
+type FilterInputFactory interface {
+	Create(entries interface{}) FilterInput
+}
+
+// FilterPipeline defines a struct that enables building
+// match, lookup, and sort aggregation pipelines for MongoDB
+type FilterPipeline struct {
+	Filters []FilterInput
+	// Prerequisites defines a map that takes an arbritrary
+	// key from either a Mongo Sort pipeline or a
+	// Mongo Match pipeline
+	Prerequisites map[string][]bson.M
+}
+
+// BuildMatch builds a match aggregation pipeline for MongoDB
+func (f *FilterPipeline) BuildMatch(cursor bson.E) (val bson.D) {
+	match := bson.D{}
+	if cursor.Key != "" {
+		match = append(match, cursor)
+	}
+	for _, f := range f.Filters {
+		val, ok := f.Bson()
+		if ok {
+			for key, val := range val {
+				match = append(match, bson.E{Key: key, Value: val})
 			}
-		} else if name == "Has" || name == "NotHas" {
-			_, ok := val.FieldByName(name).Interface().([]string)
-			if ok {
-				return &name
-			}
 		}
 	}
-	return nil
+	return match
 }
 
-// Key returns the valid field that the key belongs to
-func (i *IDFilterInput) Key() string {
-	key := i.getCurrentKey()
-	switch *key {
-	case "NotIs":
-		return "$ne"
-	case "Has":
-		return "$in"
-	case "NotHas":
-		return "$nin"
-	default:
-		return "$eq"
-	}
-}
-
-// Value returns the IDFilterInput value
-func (i *IDFilterInput) Value() interface{} {
-	ref := reflect.Indirect(reflect.ValueOf(i))
-	key := *i.getCurrentKey()
-	return ref.FieldByName(key).Interface()
-}
-
-// Bson returns the filter interface
-// to use with mongo
-func (i *IDFilterInput) Bson() (*bson.D, error) {
-	key := i.Key()
-	if key == "$eq" || key == "$ne" {
-		val := i.Value().(string)
-		id, _ := primitive.ObjectIDFromHex(val)
-		return &bson.D{{
-			Key: key, Value: id,
-		}}, nil
-	} else if key == "$in" || key == "$nin" {
-		val := i.Value().([]string)
-		ids := []primitive.ObjectID{}
-		for _, v := range val {
-			id, _ := primitive.ObjectIDFromHex(v)
-			ids = append(ids, id)
-		}
-		return &bson.D{{
-			Key: key, Value: ids,
-		}}, nil
-	}
-	return nil, ErrFilterInput
-}
-
-// UnmarshalInputIDFilterInput defines custom unmarshal fn
-func (i *IDFilterInput) UnmarshalInputIDFilterInput(v interface{}) error {
-	return nil
-}
-
-type StringFilterInput struct {
-	Contains string `json:"contains"`
-}
-
-func (s *StringFilterInput) getCurrentKey() *string {
-	val := reflect.ValueOf(s).Elem()
-	for i := 0; i < val.NumField(); i++ {
-		name := val.Type().Field(i).Name
-		val, ok := val.FieldByName(name).Interface().(*StringFilterInput)
-		if ok && val != nil {
-			return &name
+// BuildPreReq builds arbritraty pipelines that enables future pipelines
+// to execute properly
+func (f *FilterPipeline) BuildPreReq(sort bson.D, match bson.D) []bson.M {
+	prereq := []bson.M{}
+	sortMap := sort.Map()
+	matchMap := match.Map()
+	for key, val := range f.Prerequisites {
+		_, okSort := sortMap[key].(int)
+		_, okMatch := matchMap[key].(bson.M)
+		if okSort || okMatch {
+			prereq = append(prereq, val...)
 		}
 	}
-	return nil
-}
-
-// Key returns the valid field that the key belongs to
-func (s *StringFilterInput) Key() string {
-	key := s.getCurrentKey()
-	switch *key {
-	default:
-		return "$eq"
-	}
-}
-
-// Value returns the IDFilterInput value
-func (s *StringFilterInput) Value() string {
-	ref := reflect.Indirect(reflect.ValueOf(s))
-	key := *s.getCurrentKey()
-	return ref.FieldByName(key).Interface().(string)
-}
-
-// Bson returns the filter interface
-// to use with mongo
-func (s *StringFilterInput) Bson() bson.D {
-	return bson.D{{
-		Key: s.Key(), Value: s.Value(),
-	}}
-}
-
-// UnmarshalInputIDFilterInput defines custom unmarshal fn
-func (i *IDFilterInput) UnmarshalInputStringFilterInput(v interface{}) error {
-	return nil
+	return prereq
 }
