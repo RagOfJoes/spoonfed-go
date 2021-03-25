@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/RagOfJoes/spoonfed-go/internal/auth"
+	"github.com/RagOfJoes/spoonfed-go/internal/orm"
+	"github.com/RagOfJoes/spoonfed-go/internal/orm/services"
+	"github.com/RagOfJoes/spoonfed-go/pkg/auth"
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +17,7 @@ import (
 // If an access token was provided then run GetUser fn and provide its response to
 // context for futher usage.
 // If no access token was provided then continue with request execution.
-func Auth(path string) gin.HandlerFunc {
+func Auth(path string, db *orm.ORM) gin.HandlerFunc {
 	log.Printf("[Auth] attached to %s", path)
 	return gin.HandlerFunc(func(c *gin.Context) {
 		req := c.Request
@@ -37,8 +39,19 @@ func Auth(path string) gin.HandlerFunc {
 			c.Next()
 			return
 		}
+
+		tx := db.DB.Begin()
+		iUser, err := services.GetUserFromRagOfJoes(user, tx)
+		if err != nil {
+			c.Next()
+			return
+		}
+		if err := tx.Commit().Error; err != nil {
+			c.Next()
+			return
+		}
 		// 4. Add to context then resume with the rest of the request
-		util.AddToContext(c, util.ProjectContextKeys.User, user)
+		util.AddToContext(c, util.ProjectContextKeys.User, iUser)
 		c.Next()
 	})
 }

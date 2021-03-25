@@ -3,14 +3,15 @@ package routes
 import (
 	"log"
 
-	"github.com/RagOfJoes/spoonfed-go/pkg/server/handlers"
-	"github.com/RagOfJoes/spoonfed-go/pkg/server/middlewares"
+	"github.com/RagOfJoes/spoonfed-go/internal/orm"
+	"github.com/RagOfJoes/spoonfed-go/internal/server/handlers"
+	"github.com/RagOfJoes/spoonfed-go/internal/server/middlewares"
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 	"github.com/gin-gonic/gin"
 )
 
 // GraphQL sets up GraphQL related routes
-func GraphQL(cfg *util.ServerConfig, r *gin.Engine) error {
+func GraphQL(cfg *util.ServerConfig, r *gin.Engine, o *orm.ORM) error {
 	// GraphQL paths
 	graphqlPath := cfg.GraphQL.Path
 	playgroundPath := cfg.GraphQL.PlaygroundPath
@@ -19,7 +20,7 @@ func GraphQL(cfg *util.ServerConfig, r *gin.Engine) error {
 	// Middlewares execution order:
 	// 1. Auth
 	// 2. Dataloaders
-	r.POST(graphqlPath, middlewares.Auth(graphqlPath), middlewares.Dataloader(), handlers.GraphQLHandler(&cfg.GraphQL))
+	r.POST(graphqlPath, middlewares.Auth(graphqlPath, o), middlewares.Dataloader(o), handlers.GraphQLHandler(&cfg.GraphQL, o))
 	log.Printf("[GraphQL] mounted at %s", graphqlPath)
 	// Playground handler
 	if cfg.GraphQL.EnablePlayground {

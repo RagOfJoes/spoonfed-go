@@ -8,8 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-
-	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 )
 
 const (
@@ -103,11 +101,8 @@ func (c *OpenIDClient) GetUser(accessToken string) (*User, error) {
 }
 
 // GetUserFromContext does exactly that
-func GetUserFromContext(ctx context.Context, key util.ContextKey) (*User, error) {
-	user, ok := ctx.Value(key).(*User)
-	if !ok || user == nil {
-		return nil, ErrUserNotInContext
-	}
+func GetUserFromContext(ctx context.Context, key interface{}) (interface{}, error) {
+	user := ctx.Value(key)
 	return user, nil
 }
 

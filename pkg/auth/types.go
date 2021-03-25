@@ -34,5 +34,6 @@ type UserProfile struct {
 // scope: openid profile
 type User struct {
 	Sub     string      `json:"sub"`
+	Email   string      `json:"email"`
 	Profile UserProfile `json:"profile,omitempty"`
 }

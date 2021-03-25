@@ -7,15 +7,18 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/generated"
-	graphql "github.com/RagOfJoes/spoonfed-go/internal/graphql/resolver"
+	"github.com/RagOfJoes/spoonfed-go/internal/graphql/resolver"
+	"github.com/RagOfJoes/spoonfed-go/internal/orm"
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 	"github.com/gin-gonic/gin"
 )
 
 // GraphQLHandler configures gqlgen and returns a gin.HanlderFunc
 // that can be attached to a route
-func GraphQLHandler(cfg *util.GraphQLConfig) gin.HandlerFunc {
-	schema := generated.NewExecutableSchema(generated.Config{Resolvers: &graphql.Resolver{}})
+func GraphQLHandler(cfg *util.GraphQLConfig, o *orm.ORM) gin.HandlerFunc {
+	schema := generated.NewExecutableSchema(generated.Config{Resolvers: &resolver.Resolver{
+		ORM: o,
+	}})
 	h := handler.New(schema)
 
 	h.AddTransport(transport.Options{})
