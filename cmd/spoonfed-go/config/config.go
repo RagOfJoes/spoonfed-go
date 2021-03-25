@@ -1,9 +1,9 @@
 package config
 
 import (
-	"log"
 	"strings"
 
+	"github.com/RagOfJoes/spoonfed-go/pkg/logger"
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 	"github.com/joho/godotenv"
 )
@@ -12,7 +12,7 @@ import (
 func LoadConfig() *util.ServerConfig {
 	err := godotenv.Load()
 	if err != nil && util.GetAssert("APP_ENV") != "PRODUCTION" {
-		log.Panic("[ENV] Failed to load")
+		logger.Panic("[ENV] Failed to load")
 		return nil
 	}
 	return &util.ServerConfig{

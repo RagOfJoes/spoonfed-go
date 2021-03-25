@@ -1,13 +1,13 @@
 package middlewares
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/RagOfJoes/spoonfed-go/internal/orm"
 	"github.com/RagOfJoes/spoonfed-go/internal/orm/services"
 	"github.com/RagOfJoes/spoonfed-go/pkg/auth"
+	"github.com/RagOfJoes/spoonfed-go/pkg/logger"
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +18,7 @@ import (
 // context for futher usage.
 // If no access token was provided then continue with request execution.
 func Auth(path string, db *orm.ORM) gin.HandlerFunc {
-	log.Printf("[Auth] attached to %s", path)
+	logger.Infof("[Auth] attached to %s", path)
 	return gin.HandlerFunc(func(c *gin.Context) {
 		req := c.Request
 		tokenValue := getTokenValue(req.Header)

@@ -5,23 +5,23 @@ package resolver
 
 import (
 	"context"
-	"log"
 
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/generated"
+	"github.com/RagOfJoes/spoonfed-go/pkg/logger"
 )
 
 func (r *mutationResolver) RootMutation(ctx context.Context) (*string, error) {
-	log.Print("Root Mutation to allow for scema stitching.")
+	logger.Info("[GraphQL] Root Mutation to allow for scema stitching.")
 	return nil, nil
 }
 
 func (r *queryResolver) RootQuery(ctx context.Context) (*string, error) {
-	log.Print("Root Query to allow for scema stitching.")
+	logger.Info("[GraphQL] Root Query to allow for scema stitching.")
 	return nil, nil
 }
 
 func (r *subscriptionResolver) RootSubscription(ctx context.Context) (<-chan *string, error) {
-	log.Print("Root Subscription to allow for scema stitching.")
+	logger.Info("[GraphQL] Root Subscription to allow for scema stitching.")
 	return nil, nil
 }
 
