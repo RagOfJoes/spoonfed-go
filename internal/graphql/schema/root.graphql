@@ -1,5 +1,5 @@
 # Custom Scalars
-
+scalar Any
 scalar Date
 scalar Email
 # scalar ObjectId
@@ -20,10 +20,33 @@ enum SortOrder {
   DESC
 }
 
+enum FilterCondition {
+  EQUALS
+  NOT_EQUALS
+
+  LESS_THAN
+  GREATER_THAN
+  LESS_THAN_EQUAL
+  GREATER_THAN_EQUAL
+  BETWEEN
+
+  IS
+  IS_NULL
+  IS_NOT_NULL
+
+  IN
+  NOT_IN
+
+  LIKE
+  ILIKE
+  NOT_LIKE
+}
+
 # File Types
 type Image {
   url: String!
   name: String!
+  caption: String
 }
 
 type MetaDate {
@@ -36,23 +59,22 @@ type PageInfo {
   hasNextPage: Boolean!
 }
 
-input IDFilterInput {
-  is: ID
-  notIs: ID
-
-  has: [ID!]
-  notHas: [ID!]
+input SortInput {
+  key: String!
+  order: SortOrder!
 }
 
-input IntFilterInput {
-  equals: Int!
-  lessThan: Int!
-  greaterThan: Int!
+input FilterInput {
+  key: String!
+  condition: FilterCondition!
+  value: Any
+  values: [Any!]
 }
 
-input StringFilterInput {
-  matches: String
-  contains: String
+input ImageInput {
+  url: String!
+  name: String!
+  caption: String!
 }
 
 # These are to be extended for further useage
