@@ -8,7 +8,8 @@ import (
 
 // Loaders defines DataLoaders
 type Loaders struct {
-	UserByID *UserLoader
+	UserByID       *UserLoader
+	RecipeLikeByID *RecipeLikeLoader
 }
 
 // For loads existing Dataloaders provided a context

@@ -22,9 +22,18 @@ func Dataloader(o *orm.ORM) gin.HandlerFunc {
 				return services.UserDataloader(c.Request.Context(), o.DB, keys)
 			},
 		})
+		// RecipeLikeLoader
+		recipeLikeLoader := dataloader.NewRecipeLikeLoader(dataloader.RecipeLikeLoaderConfig{
+			MaxBatch: 100,
+			Wait:     2 * time.Millisecond,
+			Fetch: func(ids []string) ([]*int64, []error) {
+				return services.RecipeLikeDataloader(c.Request.Context(), o.DB, ids)
+			},
+		})
 
 		loaders := dataloader.Loaders{
 			UserByID:       userLoader,
+			RecipeLikeByID: recipeLikeLoader,
 		}
 		util.AddToContext(c, util.ProjectContextKeys.Dataloader, &loaders)
 		c.Next()
