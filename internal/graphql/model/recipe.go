@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/RagOfJoes/spoonfed-go/internal/models"
+	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 	"github.com/gofrs/uuid"
 )
 
@@ -40,6 +41,7 @@ func BuildRecipe(r *models.Recipe) (*Recipe, error) {
 	if !ok || err != nil {
 		return nil, err
 	}
+	util.UnescapeStruct(r)
 	recipe := &Recipe{
 		ID:           r.ID.String(),
 		Name:         r.Name,
@@ -67,6 +69,7 @@ func NewRecipe(r *NewRecipeInput, createdBy uuid.UUID) (*models.Recipe, error) {
 		}
 		images = append(images, *n)
 	}
+	util.EscapeStruct(r)
 	newRecipe := &models.Recipe{
 		Name:         r.Name,
 		Servings:     r.Servings,
