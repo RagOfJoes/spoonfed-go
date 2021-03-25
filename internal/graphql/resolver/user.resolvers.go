@@ -5,46 +5,25 @@ package resolver
 
 import (
 	"context"
-	"strings"
 
-	"github.com/RagOfJoes/spoonfed-go/internal/auth"
-	"github.com/RagOfJoes/spoonfed-go/internal/database"
-	"github.com/RagOfJoes/spoonfed-go/internal/graphql/generated"
 	"github.com/RagOfJoes/spoonfed-go/internal/graphql/model"
+	"github.com/RagOfJoes/spoonfed-go/internal/models"
+	"github.com/RagOfJoes/spoonfed-go/pkg/auth"
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func (r *queryResolver) Me(ctx context.Context) (*model.User, error) {
-	client, err := database.Client()
+	user, err := auth.GetUserFromContext(ctx, util.ProjectContextKeys.User)
 	if err != nil {
 		return nil, err
 	}
-	user, err := auth.GetUserFromContext(ctx, util.ProjectContextKeys.User)
-	if user == nil || err != nil {
+	u, ok := user.(*models.User)
+	if uOk, err := u.IsValid(false); !ok || !uOk || err != nil {
 		return nil, auth.ErrUnauthenticated
 	}
-	userID, err := primitive.ObjectIDFromHex(user.Sub)
+	built, err := model.BuildUser(u)
 	if err != nil {
 		return nil, err
 	}
-	return client.FindUserByID(ctx, userID)
+	return built, nil
 }
-
-func (r *userResolver) Name(ctx context.Context, obj *model.User) (*model.UserName, error) {
-	var sb strings.Builder
-	sb.WriteString(*obj.GivenName)
-	sb.WriteString(" ")
-	sb.WriteString(*obj.FamilyName)
-	fullName := sb.String()
-	return &model.UserName{
-		First: obj.GivenName,
-		Last:  obj.FamilyName,
-		Full:  &fullName,
-	}, nil
-}
-
-// User returns generated.UserResolver implementation.
-func (r *Resolver) User() generated.UserResolver { return &userResolver{r} }
-
-type userResolver struct{ *Resolver }

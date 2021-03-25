@@ -8,16 +8,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var (
-	// DatabaseCollectionNames is just that
-	DatabaseCollectionNames = map[string]string{
-		"User":     "users",
-		"Like":     "likes",
-		"Recipe":   "recipes",
-		"Creation": "creations",
-	}
-)
-
 // LoadConfig does just that
 func LoadConfig() *util.ServerConfig {
 	err := godotenv.Load()
@@ -35,10 +25,9 @@ func LoadConfig() *util.ServerConfig {
 			EnablePlayground:    util.GetAssertBool("GRAPHQL_PLAYGROUND_ENABLE"),
 			EnableIntrospection: util.GetAssertBool("GRAPHQL_INTROSPECTION_ENABLE"),
 		},
-		Database: util.DatabaseConfig{
-			Collections: DatabaseCollectionNames,
-			URI:         util.GetAssert("MONGO_URI"),
-			Name:        util.GetAssert("MONGO_DB_NAME"),
+		ORM: util.ORMConfig{
+			DSN:         util.GetAssert("ORM_DSN"),
+			AutoMigrate: util.GetAssertBool("ORM_AUTOMIGRATE"),
 		},
 		Auth: util.OpenIDClientConfig{
 			Issuer:       util.GetAssert("ROJ_ISSUER"),

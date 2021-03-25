@@ -33,7 +33,6 @@ func (e SortOrder) String() string {
 }
 
 // Int converts SortOrder value into an integer.
-// This correlates to mongo's sort definition.
 func (e SortOrder) Int() int {
 	switch e {
 	case SortOrderAsc:

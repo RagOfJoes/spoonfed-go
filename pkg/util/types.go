@@ -20,12 +20,12 @@ type ContextKeys struct {
 // ServerConfig defines the configurations that will be used to
 // run the Server
 type ServerConfig struct {
-	Host     string
-	Port     string
-	Scheme   string
-	GraphQL  GraphQLConfig
-	Database DatabaseConfig
-	Auth     OpenIDClientConfig
+	Host    string
+	Port    string
+	Scheme  string
+	ORM     ORMConfig
+	GraphQL GraphQLConfig
+	Auth    OpenIDClientConfig
 }
 
 // GraphQLConfig defines the configurations for gqlgen to be
@@ -37,11 +37,9 @@ type GraphQLConfig struct {
 	EnableIntrospection bool
 }
 
-// DatabaseConfig defines the configuration for MongoDB
-type DatabaseConfig struct {
-	URI         string
-	Name        string
-	Collections map[string]string
+type ORMConfig struct {
+	DSN         string
+	AutoMigrate bool
 }
 
 // OpenIDClientConfig defines a client that will talk to an OpenID Provider
