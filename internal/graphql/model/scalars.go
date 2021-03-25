@@ -3,11 +3,11 @@ package model
 import (
 	"errors"
 	"io"
-	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 )
 
 // Date is the custom type for Date scalar
@@ -50,7 +50,6 @@ var (
 	ErrEmailType = errors.New("email must be a string")
 	// ErrEmailFormat error
 	ErrEmailFormat = errors.New("invalid format")
-	emailRegexp    = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 )
 
 func (e Email) String() string {
@@ -60,7 +59,7 @@ func (e Email) String() string {
 // IsValid fn checks whether a string matches our custom
 // email regex
 func (e Email) IsValid() bool {
-	if !emailRegexp.MatchString(e.String()) {
+	if !util.IsEmail(e.String()) {
 		return false
 	}
 	return true

@@ -1,13 +1,11 @@
 type User {
-  # From AS Server
-  sub: ID!
-  email: Email!
-  join_date: Date
-
+  id: ID!
+  username: String
   bio: String
   avatar: String
-  username: String
+  email: Email!
   name: UserName
+  date: MetaDate!
 }
 
 type UserName {

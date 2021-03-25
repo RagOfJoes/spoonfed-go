@@ -9,11 +9,11 @@ WORKDIR /spoonfed-go
 
 # Copies source code into container working dir
 COPY . .
+
 # Download project deps
-# Add realize for hot reaload
-# See: https://github.com/cosmtrek/air/issues/114
+# Add air for hot reload
 RUN go mod download \
-  && go get -v github.com/cosmtrek/air@b538c70423fb3590435c003dda15bf6a2f61187c \
+  && go get -u -v github.com/cosmtrek/air@master \
   && echo "Finished downloading dependencies"
 # Verify modules
 RUN go mod verify

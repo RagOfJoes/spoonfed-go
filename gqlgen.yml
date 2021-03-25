@@ -14,7 +14,7 @@ exec:
 
 # Where should any generated models go?
 model:
-  filename: internal/graphql/model/models_gen.go
+  filename: internal/graphql/model/model_gen.go
   package: model
 
 # Where should the resolver implementations go?
@@ -62,11 +62,15 @@ models:
     model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.MetaDate
   SortOrder:
     model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.SortOrder
-  RecipeSortInput:
-    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.RecipeSortInput
-  IDFilterInput:
-    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.IDFilterInput
-  StringFilterInput:
-    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.StringFilterInput
-  RecipeFilterInput:
-    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.RecipeFilterInput
+  Image:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.Image
+  ImageInput:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.ImageInput
+  User:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.User
+  RecipeTime:
+    model: github.com/RagOfJoes/spoonfed-go/internal/models.RecipeTime
+  Recipe:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.Recipe
+  NewRecipeInput:
+    model: github.com/RagOfJoes/spoonfed-go/internal/graphql/model.NewRecipeInput

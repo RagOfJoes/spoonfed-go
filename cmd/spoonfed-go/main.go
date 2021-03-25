@@ -1,16 +1,15 @@
 package main
 
 import (
-	"log"
-
 	"github.com/RagOfJoes/spoonfed-go/cmd/spoonfed-go/config"
-	"github.com/RagOfJoes/spoonfed-go/pkg/server"
+	"github.com/RagOfJoes/spoonfed-go/internal/server"
+	"github.com/RagOfJoes/spoonfed-go/pkg/logger"
 )
 
 func main() {
 	cfg := config.LoadConfig()
 	err := server.Run(cfg)
 	if err != nil {
-		log.Panic(err)
+		logger.Panic(err)
 	}
 }

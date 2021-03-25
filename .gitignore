@@ -15,7 +15,7 @@
 # vendor/
 
 # Dotenv
-.env
+*.env
 
 # Build folders
 tmp

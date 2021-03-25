@@ -1,9 +1,9 @@
 type Recipe {
   id: ID!
   name: String!
+  time: RecipeTime
   images: [Image!]!
   servings: String!
-  time: RecipeTimeType
   ingredients: [String!]!
   instructions: [String!]!
 
@@ -16,7 +16,7 @@ type Recipe {
   importUrl: String
 }
 
-type RecipeTimeType {
+type RecipeTime {
   prep: String
   cook: String
   ready: String
@@ -40,18 +40,42 @@ extend type Query {
   getRecipes(
     limit: Int!
     cursor: ID
-    sort: RecipeSortInput!
-    filters: [RecipeFilterInput!]
+    sort: SortInput!
+    filters: [FilterInput!]
   ): RecipeConnection!
 }
 
-input RecipeSortInput {
-  name: SortOrder
-  dateCreation: SortOrder
+input RecipeTimeInput {
+  prep: String
+  cook: String
+  ready: String
+  total: String!
+  active: String
+  inactive: String
 }
 
-input RecipeFilterInput {
-  name: StringFilterInput
-  userSub: IDFilterInput
-  userName: StringFilterInput
+input NewRecipeInput {
+  name: String!
+  servings: String!
+  importUrl: String
+  time: RecipeTimeInput
+  images: [ImageInput!]!
+  ingredients: [String!]!
+  instructions: [String!]!
+}
+
+input EditRecipeInput {
+  ID: ID!
+  name: String
+	servings: String
+	images: [ImageInput!]
+	time: RecipeTimeInput
+	ingredients: [String!]
+	instructions: [String!]
+}
+
+extend type Mutation {
+  toggleRecipeLike(recipeID: ID!): Recipe!
+  editRecipe(recipe: EditRecipeInput!): Recipe!
+  createRecipe(recipe: NewRecipeInput!): Recipe!
 }
