@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/gin-gonic/gin v1.6.3
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
+	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.10.0
 	github.com/sirupsen/logrus v1.8.1

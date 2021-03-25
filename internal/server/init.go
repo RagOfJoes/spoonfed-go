@@ -6,6 +6,11 @@ import (
 	"github.com/RagOfJoes/spoonfed-go/pkg/util"
 )
 
+// InitializeORM initiaalizes the ORM singleton object
+func InitializeORM(cfg *util.ServerConfig) (*orm.ORM, error) {
+	return orm.New(cfg)
+}
+
 // InitializeOpenIDClient does exactly as the name suggests
 func InitializeOpenIDClient(cfg *util.ServerConfig) (*auth.OpenIDClient, error) {
 	scope := cfg.Auth.Scopes
