@@ -8,11 +8,11 @@ Go adaptation of my spoonfed-gql.
   - Added restructured cursor pagination for recipes
 - [x] Add Docker
 - [x] Add live reload(Air)
+- [x] Replaced MongoDB with Gorm(Postgres)
+- [x] Migrate dataloaders
+  - [x] Add dataloaders for likes
 - [ ] Migrate over the rest of the schema
-- [ ] Migrate dataloaders
-  - (MAYBE) Add dataloaders for likes
 - [ ] Migrate AWS S3
-- [ ] (MAYBE) Look into replacing MongoDB with Postgres
 - [ ] Add recipe folder functionality
 
 ## Usage
