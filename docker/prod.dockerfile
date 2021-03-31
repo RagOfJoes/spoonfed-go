@@ -5,9 +5,10 @@ FROM golang:alpine AS builder
 # so install necessary tools
 RUN apk update && apk add --no-cache git make 
 
-RUN mkdir /build
-ADD . /build/
 WORKDIR /build
+
+# COPY GO MODULE FILES TO ALLOW FOR CACHING OF MODULE FETCHING
+COPY . /build/
 
 RUN go mod download
 RUN go mod verify

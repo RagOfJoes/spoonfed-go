@@ -13,10 +13,7 @@ COPY . .
 # Download project deps
 # Add air for hot reload
 RUN go mod download \
-  && go get -u -v github.com/cosmtrek/air@master \
-  && echo "Finished downloading dependencies"
-# Verify modules
-RUN go mod verify
+  && go get -u -v github.com/cosmtrek/air@master 
 
 EXPOSE 8080
 

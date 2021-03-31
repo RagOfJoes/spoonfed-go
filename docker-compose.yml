@@ -2,6 +2,7 @@ version: "3.8"
 services:
   db:
     image: postgres
+    container_name: "spoonfed-go-dev-db"
     env_file:
       - pg.env
     ports:
